@@ -12,6 +12,8 @@ class App(ListViewDataSource):
     def __init__(self, host):
         self.host = host
 
+        self.__connectors = []
+
         ui = UI(self)
         curses.wrapper(ui.loop)
 
@@ -47,6 +49,29 @@ class App(ListViewDataSource):
 
     def prettyfyJson(self, aJson):
         return json.dumps(aJson, sort_keys=True, indent=4)
+
+    def number_of_rows(self) -> int:
+        return len(self.__connectors)
+
+    def get_data(self, i) -> object:
+        return self.__connectors[i]
+
+    def getConnector(self, connectorId):
+        connector = self.getConnectorStatus(connectorId)
+        state = connector['connector']['state']
+        workerId = connector['connector']['worker_id']
+        type = connector['type']
+        name = connector['name']
+        tasks = len(connector['tasks'])
+
+        return (state, type, workerId, tasks, name)
+
+    def refreshConnectors(self):
+        self.__connectors = []
+
+        connectorIds = self.getConnectors()
+        self.__connectors = [ self.getConnector(connectorId) for connectorId in connectorIds ]
+
 
 
 

@@ -6,7 +6,7 @@ import curses
 import subprocess
 import platform
 
-from lib import colorpairs, legends
+from lib import colorpairs, legends, keys
 
 
 class UI(ListViewDelegate):
@@ -77,6 +77,43 @@ class UI(ListViewDelegate):
 
         return (background, title_hbox)
 
+    def addListView(self, screen):
+        listView = ListView(self, self.app)
+        screen.add_view(listView, lambda w, h, v: (0, 1, w, h-2))
+
+        return listView
+
+    def build_row(self, i, data, is_selected, width) -> View:
+        rowHBox = HBox()
+
+        state, type, workerId, tasks, name = data
+
+        stateLabel = Label('{:<10}'.format(state))
+
+        workerIdLabel = Label('{:<21}'.format(workerId))
+
+        typeLabel = Label('{:<6}'.format(type))
+
+        tasksLabel = Label('{:<3}'.format(tasks))
+
+        nameLabel = Label(name)
+
+        rowHBox.add_view(stateLabel, Padding(1, 0, 0, 0))
+        rowHBox.add_view(typeLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(workerIdLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(tasksLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(nameLabel, Padding(2, 0, 0, 0))
+
+        result = rowHBox
+        if is_selected:
+            result = BackgroundView(curses.color_pair(colorpairs.SELECTED))
+            result.add_view(rowHBox)
+            for label in rowHBox.get_elements():
+                label.attributes.append(curses.color_pair(colorpairs.SELECTED))
+
+        return result
+
+
     def loop(self, stdscr):
         self.setupColors()
 
@@ -84,6 +121,7 @@ class UI(ListViewDelegate):
         self.titleElements = []
         legendElements = self.addLegend(screen, legends.main())
         headerElements = self.addHeaderBox(screen)
+        listView = self.addListView(screen)
 
         while 1:
             screen.render()
@@ -92,4 +130,14 @@ class UI(ListViewDelegate):
             if key == curses.KEY_RESIZE:
                 continue
 
-            exit(0)
+            if key == keys.UP:
+                listView.select_previous()
+
+            if key == keys.DOWN:
+                listView.select_next()
+
+            if key == keys.R:
+                self.app.refreshConnectors()
+
+            if key == keys.Q:
+                exit(0)
