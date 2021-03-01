@@ -16,6 +16,18 @@ class UI(ListViewDelegate):
     TYPE_FORMAT = '{:<7}'
     TASKS_FORMAT = '{:<6}'
 
+    STATE_COLORS = {
+        'UNASSIGNED': colorpairs.UNASSIGNED,
+        'RUNNING': colorpairs.RUNNING,
+        'PAUSED': colorpairs.PAUSED,
+        'FAILED': colorpairs.FAILED
+    }
+
+    TYPE_COLORS = {
+        'source': colorpairs.SOURCE,
+        'sink': colorpairs.SINK
+    }
+
     def __init__(self, app):
         self.app = app
 
@@ -43,6 +55,14 @@ class UI(ListViewDelegate):
 
         curses.init_pair(colorpairs.LANG, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(colorpairs.TRANSLATION_KEY, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+
+        curses.init_pair(colorpairs.UNASSIGNED, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(colorpairs.RUNNING, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(colorpairs.PAUSED, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(colorpairs.FAILED, curses.COLOR_RED, curses.COLOR_BLACK)
+
+        curses.init_pair(colorpairs.SOURCE, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(colorpairs.SINK, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 
     def addLegend(self, screen, legendItems):
         moreLabel = Label('')
@@ -135,10 +155,14 @@ class UI(ListViewDelegate):
         state, type, workerId, tasks, name = data
 
         stateLabel = Label(self.STATE_FORMAT.format(state))
+        stateLabel.attributes.append(curses.color_pair(self.STATE_COLORS[state]))
+        stateLabel.attributes.append(curses.A_BOLD)
 
         workerIdLabel = Label(self.WORKER_ID_FORMAT.format(workerId))
 
         typeLabel = Label(self.TYPE_FORMAT.format(type))
+        typeLabel.attributes.append(curses.color_pair(self.TYPE_COLORS[type]))
+        typeLabel.attributes.append(curses.A_BOLD)
 
         tasksLabel = Label(self.TASKS_FORMAT.format(tasks))
 
