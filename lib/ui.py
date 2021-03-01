@@ -11,6 +11,11 @@ from lib import colorpairs, legends, keys
 
 class UI(ListViewDelegate):
 
+    STATE_FORMAT = '{:<11}'
+    WORKER_ID_FORMAT = '{:<21}'
+    TYPE_FORMAT = '{:<7}'
+    TASKS_FORMAT = '{:<6}'
+
     def __init__(self, app):
         self.app = app
 
@@ -33,7 +38,7 @@ class UI(ListViewDelegate):
 
         curses.init_pair(colorpairs.FILTER_CRITERIA, curses.COLOR_BLACK, curses.COLOR_GREEN)
         curses.init_pair(colorpairs.FILTER_CRITERIA_EDITING, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
-        curses.init_pair(colorpairs.HEADER_TEXT, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(colorpairs.HEADER_TEXT, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
         curses.init_pair(colorpairs.PATTERN, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
 
         curses.init_pair(colorpairs.LANG, curses.COLOR_YELLOW, curses.COLOR_BLACK)
@@ -64,7 +69,7 @@ class UI(ListViewDelegate):
 
     def addHeaderBox(self, screen):
         background = BackgroundView(curses.color_pair(colorpairs.HEADER_TEXT))
-        screen.add_view(background, lambda w, h, v: (0, 0, w, 1))
+        screen.add_view(background, lambda w, h, v: (0, 0, w, 2))
 
         hostLabel = Label(self.app.host)
         hostLabel.attributes.append(curses.color_pair(colorpairs.HEADER_TEXT))
@@ -75,11 +80,52 @@ class UI(ListViewDelegate):
         screen.add_view(title_hbox, lambda w, h, v: (
         (w - v.required_size().width) // 2, 0, title_hbox.required_size().width + 1, 1))
 
-        return (background, title_hbox)
+        columnNamesBox, moreLabel = self.addColumnNames(screen)
+
+        return (background, title_hbox, columnNamesBox, moreLabel)
+
+    def addColumnNames(self, screen):
+        moreLabel = Label('')
+
+        def setMoreLabel(clipped):
+            moreLabel.text = '...' if clipped else ''
+
+        box = HBox()
+        box.clipping_callback = setMoreLabel
+
+        stateLabel = Label(self.STATE_FORMAT.format('STATE'))
+        stateLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        stateLabel.attributes.append(curses.A_BOLD)
+        box.add_view(stateLabel, Padding(1, 0, 0, 0))
+
+        workerIdLabel = Label(self.WORKER_ID_FORMAT.format('WORKER_ID'))
+        workerIdLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        workerIdLabel.attributes.append(curses.A_BOLD)
+        box.add_view(workerIdLabel, Padding(2, 0, 0, 0))
+
+        typeLabel = Label(self.TYPE_FORMAT.format('TYPE'))
+        typeLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        typeLabel.attributes.append(curses.A_BOLD)
+        box.add_view(typeLabel, Padding(2, 0, 0, 0))
+
+        tasksLabel = Label(self.TASKS_FORMAT.format('TASKS'))
+        tasksLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        tasksLabel.attributes.append(curses.A_BOLD)
+        box.add_view(tasksLabel, Padding(2, 0, 0, 0))
+
+        nameLabel = Label('NAME')
+        nameLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        nameLabel.attributes.append(curses.A_BOLD)
+        box.add_view(nameLabel, Padding(2, 0, 0, 0))
+
+        screen.add_view(box, lambda w, h, v: (0, 1, w - moreLabel.required_size().width, 1))
+        screen.add_view(moreLabel, lambda w, h, v: (w - v.required_size().width - 1, 1, v.required_size().width, 1))
+
+        return (box, moreLabel)
 
     def addListView(self, screen):
         listView = ListView(self, self.app)
-        screen.add_view(listView, lambda w, h, v: (0, 1, w, h-2))
+        screen.add_view(listView, lambda w, h, v: (0, 2, w, h-2))
 
         return listView
 
@@ -88,19 +134,19 @@ class UI(ListViewDelegate):
 
         state, type, workerId, tasks, name = data
 
-        stateLabel = Label('{:<10}'.format(state))
+        stateLabel = Label(self.STATE_FORMAT.format(state))
 
-        workerIdLabel = Label('{:<21}'.format(workerId))
+        workerIdLabel = Label(self.WORKER_ID_FORMAT.format(workerId))
 
-        typeLabel = Label('{:<6}'.format(type))
+        typeLabel = Label(self.TYPE_FORMAT.format(type))
 
-        tasksLabel = Label('{:<3}'.format(tasks))
+        tasksLabel = Label(self.TASKS_FORMAT.format(tasks))
 
         nameLabel = Label(name)
 
         rowHBox.add_view(stateLabel, Padding(1, 0, 0, 0))
-        rowHBox.add_view(typeLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(workerIdLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(typeLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(tasksLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(nameLabel, Padding(2, 0, 0, 0))
 
