@@ -1,0 +1,3 @@
+[submodule "gupy"]
+	path = gupy
+	url = https://github.com/tkober/gupy.git
