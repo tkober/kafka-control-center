@@ -97,45 +97,45 @@ class App(ListViewDataSource):
 
         return json.loads(response.text)
 
-    def getConnectorOverview(self, connector):
+    def getConnectorOverview(self, connector: str):
         url = '%s/connectors/%s' % (self.host, connector)
         response = requests.get(url)
         self.assertSuccess(response)
 
         return json.loads(response.text)
 
-    def getConnectorStatus(self, connector):
+    def getConnectorStatus(self, connector: str):
         url = '%s/connectors/%s/status' % (self.host, connector)
         response = requests.get(url)
         self.assertSuccess(response)
 
         return json.loads(response.text)
 
-    def getConnectorTasks(self, connector):
+    def getConnectorTasks(self, connector: str):
         url = '%s/connectors/%s/tasks' % (self.host, connector)
         response = requests.get(url)
         self.assertSuccess(response)
 
         return json.loads(response.text)
 
-    def getConnectorConfig(self, connector):
+    def getConnectorConfig(self, connector: str):
         url = '%s/connectors/%s/config' % (self.host, connector)
         response = requests.get(url)
         self.assertSuccess(response)
 
         return json.loads(response.text)
 
-    def restartConnector(self, connector):
+    def restartConnector(self, connector: str):
         url = '%s/connectors/%s/restart' % (self.host, connector)
         response = requests.post(url)
         self.assertSuccess(response)
 
-    def pauseConnector(self, connector):
+    def pauseConnector(self, connector: str):
         url = '%s/connectors/%s/pause' % (self.host, connector)
         response = requests.put(url)
         self.assertSuccess(response)
 
-    def resumeConnector(self, connector):
+    def resumeConnector(self, connector: str):
         url = '%s/connectors/%s/resume' % (self.host, connector)
         response = requests.put(url)
         self.assertSuccess(response)
@@ -143,6 +143,11 @@ class App(ListViewDataSource):
     def createConnector(self, content: str):
         url = '%s/connectors' % self.host
         response = requests.post(url, json=json.loads(content))
+        self.assertSuccess(response)
+
+    def updateConfig(self, connector: str, content: str):
+        url = '%s/connectors/%s/config' % (self.host, connector)
+        response = requests.put(url, json=json.loads(content))
         self.assertSuccess(response)
 
     def assertSuccess(self, response: requests.Response):
@@ -219,6 +224,13 @@ class App(ListViewDataSource):
 
         if changed:
             self.createConnector(updatedContent)
+
+    def updateConnector(self, connector, config):
+        changed, updatedContent = self.openEditor(config)
+
+        if changed:
+            self.updateConfig(connector, updatedContent)
+
 
 if __name__ == '__main__':
     App()

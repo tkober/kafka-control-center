@@ -413,6 +413,12 @@ class UI(ListViewDelegate):
                     self.app.resumeConnector(selectedConnector)
                     self.app.refreshConnector(self.__connectorsListView.get_selected_row_index())
 
+                if key == keys.U:
+                    conifg = self.app.getConnectorConfig(selectedConnector)
+                    conifg = self.app.prettyfyJson(conifg)
+                    self.app.updateConnector(selectedConnector, conifg)
+                    exit(0)
+
                 if key == keys.Q:
                     exit(0)
 
