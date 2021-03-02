@@ -205,14 +205,16 @@ class UI(ListViewDelegate):
     def buildDocumentRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
 
+        lineNumber, line = data
         if self.__lineNumbers:
-            formatString = '{:>%s}' % len(str(self.__document.number_of_rows()))
-            lineNumberLabel = Label(formatString.format(str(i+1)))
+            formatString = '{:>%s}' % len(str(self.__document.getNumberOfUnwrappedLines()))
+            lineWrapped = str(lineNumber) if lineNumber != None else ''
+            lineNumberLabel = Label(formatString.format(lineWrapped))
             lineNumberLabel.attributes.append(curses.color_pair(colorpairs.LINE_NUMBER))
 
             rowHBox.add_view(lineNumberLabel, Padding(0, 0, 2, 0))
 
-        lineLabel = Label(data)
+        lineLabel = Label(line)
         rowHBox.add_view(lineLabel, Padding(0, 0, 0, 0))
 
         if rowHBox.required_size().width >= width:
@@ -319,7 +321,7 @@ class UI(ListViewDelegate):
             if self.__document:
                 availableSize = screen_width
                 if self.__lineNumbers:
-                    availableSize = availableSize - 2 - len(str(self.__document.number_of_rows()))
+                    availableSize = availableSize - len(str(self.__document.number_of_rows())) - 3
                 self.__document.wrapToWidth(availableSize)
 
             self.__screen.render()
