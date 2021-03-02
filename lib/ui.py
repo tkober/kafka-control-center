@@ -352,6 +352,7 @@ class UI(ListViewDelegate):
         self.__documentListView = None
 
         self.reloadConnectors()
+        _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
         while 1:
             _, screen_width = self.__screen.get_screen_size()
@@ -371,36 +372,46 @@ class UI(ListViewDelegate):
 
                 if key == keys.UP:
                     self.__connectorsListView.select_previous()
+                    _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
                 if key == keys.DOWN:
                     self.__connectorsListView.select_next()
+                    _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
-                if key == keys.R:
+                if key == keys.L:
                     self.reloadConnectors()
 
                 if key == keys.O:
-                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
-                    jsonContent = self.app.getConnectorOverview(connector)
+                    jsonContent = self.app.getConnectorOverview(selectedConnector)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.switchToDocument(document, connector, 'Overview')
+                    self.switchToDocument(document, selectedConnector, 'Overview')
 
                 if key == keys.S:
-                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
-                    jsonContent = self.app.getConnectorStatus(connector)
+                    jsonContent = self.app.getConnectorStatus(selectedConnector)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.switchToDocument(document, connector, 'Status')
+                    self.switchToDocument(document, selectedConnector, 'Status')
 
                 if key == keys.C:
-                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
-                    jsonContent = self.app.getConnectorConfig(connector)
+                    jsonContent = self.app.getConnectorConfig(selectedConnector)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.switchToDocument(document, connector, 'Config')
+                    self.switchToDocument(document, selectedConnector, 'Config')
 
                 if key == keys.T:
-                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
-                    jsonContent = self.app.getConnectorTasks(connector)
+                    jsonContent = self.app.getConnectorTasks(selectedConnector)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.switchToDocument(document, connector, 'Tasks')
+                    self.switchToDocument(document, selectedConnector, 'Tasks')
+
+                if key == keys.R:
+                    self.app.restartConnector(selectedConnector)
+                    self.app.refreshConnector(self.__connectorsListView.get_selected_row_index())
+
+                if key == keys.P:
+                    self.app.pauseConnector(selectedConnector)
+                    self.app.refreshConnector(self.__connectorsListView.get_selected_row_index())
+
+                if key == keys.E:
+                    self.app.resumeConnector(selectedConnector)
+                    self.app.refreshConnector(self.__connectorsListView.get_selected_row_index())
 
                 if key == keys.Q:
                     exit(0)

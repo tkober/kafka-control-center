@@ -6,6 +6,8 @@ from subprocess import call
 import requests
 import json
 
+from requests import RequestException
+
 from gupy.view import ListViewDataSource
 from lib.ui import UI
 
@@ -22,33 +24,58 @@ class App(ListViewDataSource):
 
     def getConnectors(self):
         url = '%s/connectors' % self.host
-        r = requests.get(url)
+        response = requests.get(url)
+        self.assertSuccess(response)
 
-        return json.loads(r.text)
+        return json.loads(response.text)
 
     def getConnectorOverview(self, connector):
         url = '%s/connectors/%s' % (self.host, connector)
-        r = requests.get(url)
+        response = requests.get(url)
+        self.assertSuccess(response)
 
-        return json.loads(r.text)
+        return json.loads(response.text)
 
     def getConnectorStatus(self, connector):
         url = '%s/connectors/%s/status' % (self.host, connector)
-        r = requests.get(url)
+        response = requests.get(url)
+        self.assertSuccess(response)
 
-        return json.loads(r.text)
+        return json.loads(response.text)
 
     def getConnectorTasks(self, connector):
         url = '%s/connectors/%s/tasks' % (self.host, connector)
-        r = requests.get(url)
+        response = requests.get(url)
+        self.assertSuccess(response)
 
-        return json.loads(r.text)
+        return json.loads(response.text)
 
     def getConnectorConfig(self, connector):
         url = '%s/connectors/%s/config' % (self.host, connector)
-        r = requests.get(url)
+        response = requests.get(url)
+        self.assertSuccess(response)
 
-        return json.loads(r.text)
+        return json.loads(response.text)
+
+    def restartConnector(self, connector):
+        url = '%s/connectors/%s/restart' % (self.host, connector)
+        response = requests.post(url)
+        self.assertSuccess(response)
+
+    def pauseConnector(self, connector):
+        url = '%s/connectors/%s/pause' % (self.host, connector)
+        response = requests.put(url)
+        self.assertSuccess(response)
+
+    def resumeConnector(self, connector):
+        url = '%s/connectors/%s/resume' % (self.host, connector)
+        response = requests.put(url)
+        self.assertSuccess(response)
+
+    def assertSuccess(self, response: requests.Response):
+        if response.status_code not in range(200, 300):
+            message = "\nRequest %s '%s' failed (%s):\n%s" % (response.request.method, response.url, response.status_code, response.text)
+            raise RequestException(message)
 
     def prettyfyJson(self, aJson):
         return json.dumps(aJson, sort_keys=True, indent=4)
@@ -90,6 +117,9 @@ class App(ListViewDataSource):
         if onClomplete:
             onClomplete()
 
+    def refreshConnector(self, index):
+        _, _, _, _, connector = self.__connectors[index]
+        self.__connectors[index] = self.getConnector(connector)
 
     def openEditor(self, content):
         EDITOR = os.environ.get('EDITOR', 'vim')

@@ -4,11 +4,14 @@ def main():
     result = [
         ('[UP]', ' Scroll up '),
         ('[DOWN]', ' Scroll down '),
-        ('[R]', ' Refresh '),
+        ('[L]', ' Reload List '),
         ('[O]', ' Overview '),
         ('[S]', ' Status '),
         ('[C]', ' Config '),
         ('[U]', ' Update Config '),
+        ('[R]', ' Restart '),
+        ('[P]', ' Pause '),
+        ('[E]', ' Resume '),
         ('[T]', ' Tasks '),
     ]
 
