@@ -304,6 +304,7 @@ class UI(ListViewDelegate):
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
         self.__lineNumbers = True
+        self.__document = None
         self.setupColors()
 
         self.__screen = ConstrainedBasedScreen(stdscr)
@@ -314,6 +315,13 @@ class UI(ListViewDelegate):
         self.__documentListView = None
 
         while 1:
+            _, screen_width = self.__screen.get_screen_size()
+            if self.__document:
+                availableSize = screen_width
+                if self.__lineNumbers:
+                    availableSize = availableSize - 2 - len(str(self.__document.number_of_rows()))
+                self.__document.wrapToWidth(availableSize)
+
             self.__screen.render()
 
             key = stdscr.getch()
