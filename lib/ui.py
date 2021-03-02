@@ -197,14 +197,15 @@ class UI(ListViewDelegate):
     def buildDocumentRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
 
-        formatString = '{:>%s}' % len(str(self.__document.number_of_rows()))
-        lineNumberLabel = Label(formatString.format(str(i+1)))
-        lineNumberLabel.attributes.append(curses.color_pair(colorpairs.LINE_NUMBER))
+        if self.__lineNumbers:
+            formatString = '{:>%s}' % len(str(self.__document.number_of_rows()))
+            lineNumberLabel = Label(formatString.format(str(i+1)))
+            lineNumberLabel.attributes.append(curses.color_pair(colorpairs.LINE_NUMBER))
 
-        rowHBox.add_view(lineNumberLabel, Padding(0, 0, 0, 0))
+            rowHBox.add_view(lineNumberLabel, Padding(0, 0, 2, 0))
 
         lineLabel = Label(data)
-        rowHBox.add_view(lineLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(lineLabel, Padding(0, 0, 0, 0))
 
         result = rowHBox
         if is_selected:
@@ -266,6 +267,7 @@ class UI(ListViewDelegate):
 
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
+        self.__lineNumbers = True
         self.setupColors()
 
         self.__screen = ConstrainedBasedScreen(stdscr)
@@ -330,6 +332,9 @@ class UI(ListViewDelegate):
                 if key == keys.O:
                     self.app.openEditor(self.__document.getText())
                     exit(0)
+
+                if key == keys.L:
+                    self.__lineNumbers = not self.__lineNumbers
 
                 if key == keys.Q:
                     self.__mode = Mode.CONNECTORS
