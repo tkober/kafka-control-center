@@ -1,3 +1,4 @@
+import argparse
 import curses
 import os
 import tempfile
@@ -14,8 +15,21 @@ from lib.ui import UI
 
 class App(ListViewDataSource):
 
-    def __init__(self, host):
-        self.host = host
+    def parseArgs(self):
+        argparser = argparse.ArgumentParser(
+            prog='confluent-cli',
+            description='Implements an interactive CLI for the usage of the confluent REST interface'
+        )
+        argparser.add_argument(
+            'URL',
+            help='The URL of the cluster in the format https://HOST:PORT')
+
+        return argparser.parse_args()
+
+    def __init__(self):
+
+        args = self.parseArgs()
+        self.host = args.URL
 
         self.__connectors = []
 
@@ -136,9 +150,5 @@ class App(ListViewDataSource):
             return (changed, updatedContent)
 
 
-
-
 if __name__ == '__main__':
-    host = 'http://172.20.3.207:31096'
-
-    App(host)
+    App()
