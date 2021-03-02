@@ -44,6 +44,12 @@ class App(ListViewDataSource):
             action="store_true"
         )
 
+        argparser.add_argument(
+            '--plugins',
+            help="Return a list of connector plugins installed in the Kafka Connect cluster",
+            action="store_true"
+        )
+
         return argparser.parse_args()
 
     def configFromArgs(self, args):
@@ -85,10 +91,20 @@ class App(ListViewDataSource):
             config = self.configFromArgs(args)
             self.buildConnector(args.create, config)
 
+        elif args.plugins:
+            self.printPlugins()
+
         else:
             self.__connectors = []
             ui = UI(self)
             curses.wrapper(ui.loop)
+
+    def getConnectorPlugins(self):
+        url = '%s/connector-plugins' % self.host
+        response = requests.get(url)
+        self.assertSuccess(response)
+
+        return json.loads(response.text)
 
     def getConnectors(self):
         url = '%s/connectors' % self.host
@@ -230,6 +246,11 @@ class App(ListViewDataSource):
 
         if changed:
             self.updateConfig(connector, updatedContent)
+
+
+    def printPlugins(self):
+        plugins = self.getConnectorPlugins()
+        print(self.prettyfyJson(plugins))
 
 
 if __name__ == '__main__':
