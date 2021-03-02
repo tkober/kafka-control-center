@@ -301,6 +301,12 @@ class UI(ListViewDelegate):
                     document = Document(self.app.prettyfyJson(jsonContent))
                     self.switchToDocument(document, connector, 'Overview')
 
+                if key == keys.S:
+                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
+                    jsonContent = self.app.getConnectorStatus(connector)
+                    document = Document(self.app.prettyfyJson(jsonContent))
+                    self.switchToDocument(document, connector, 'Status')
+
                 if key == keys.Q:
                     exit(0)
 
