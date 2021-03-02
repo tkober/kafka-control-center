@@ -72,6 +72,8 @@ class UI(ListViewDelegate):
 
         curses.init_pair(colorpairs.VIEW, curses.COLOR_BLUE, curses.COLOR_WHITE)
 
+        curses.init_pair(colorpairs.LINE_NUMBER, curses.COLOR_CYAN, curses.COLOR_BLACK)
+
     def addLegend(self, screen, legendItems):
         moreLabel = Label('')
 
@@ -190,14 +192,21 @@ class UI(ListViewDelegate):
     def build_row(self, i, data, is_selected, width) -> View:
         if self.__mode == Mode.CONNECTORS:
             return self.buildConnectorRow(i, data, is_selected, width)
+
         elif self.__mode == Mode.DOCUMENT:
             return self.buildDocumentRow(i, data, is_selected, width)
 
     def buildDocumentRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
 
+        formatString = '{:>%s}' % len(str(self.__document.number_of_rows()))
+        lineNumberLabel = Label(formatString.format(str(i+1)))
+        lineNumberLabel.attributes.append(curses.color_pair(colorpairs.LINE_NUMBER))
+
+        rowHBox.add_view(lineNumberLabel, Padding(0, 0, 0, 0))
+
         lineLabel = Label(data)
-        rowHBox.add_view(lineLabel, Padding(1, 0, 0, 0))
+        rowHBox.add_view(lineLabel, Padding(2, 0, 0, 0))
 
         result = rowHBox
         if is_selected:
@@ -246,6 +255,7 @@ class UI(ListViewDelegate):
         self.__mode = Mode.DOCUMENT
         self.__connectorName = connector
         self.__view = view
+        self.__document = document
 
         self.__screen.remove_view(self.__connectorsListView)
         self.__documentListView = self.createListView(self.__screen, document)
