@@ -20,21 +20,75 @@ class App(ListViewDataSource):
             prog='confluent-cli',
             description='Implements an interactive CLI for the usage of the confluent REST interface'
         )
+
         argparser.add_argument(
             'URL',
             help='The URL of the cluster in the format https://HOST:PORT')
 
+        argparser.add_argument(
+            '-c',
+            '--create',
+            help="Create a new connector with the given NAME",
+            metavar='NAME'
+        )
+
+        argparser.add_argument(
+            '--jdbcSource',
+            help="Uses the template for a JDBC Source Connector",
+            action="store_true"
+        )
+
+        argparser.add_argument(
+            '--jdbcSink',
+            help="Uses the template for a JDBC Sink Connector",
+            action="store_true"
+        )
+
         return argparser.parse_args()
+
+    def configFromArgs(self, args):
+        config = dict()
+
+        if args.jdbcSource:
+            config['connector.class'] = 'io.confluent.connect.jdbc.JdbcSourceConnector'
+            config['mode'] = 'timestamp'
+            config['poll.interval.ms'] = '7200000'
+            config['tasks.max'] = '1'
+            config['timestamp.column.name'] = None
+            config['topic.prefix'] = None
+            config['connection.url'] = None
+            config['query'] = None
+
+        elif args.jdbcSink:
+            config['connector.class'] = 'io.confluent.connect.jdbc.JdbcSinkConnector'
+            config['auto.create'] = 'true'
+            config['insert.mode'] = 'upsert'
+            config['tasks.max'] = '1'
+            config['pk.fields'] = None
+            config['pk.mode'] = None
+            config['connection.url'] = None
+            config['topics'] = None
+
+        else:
+            config['connector.class'] = None
+            config['tasks.max'] = '1'
+            config['topics'] = None
+
+        return config
 
     def __init__(self):
 
         args = self.parseArgs()
         self.host = args.URL
 
-        self.__connectors = []
+        if args.create:
+            config = self.configFromArgs(args)
+            self.buildConnector(args.create, config)
 
-        ui = UI(self)
-        curses.wrapper(ui.loop)
+        else:
+            self.__connectors = []
+            ui = UI(self)
+            curses.wrapper(ui.loop)
 
     def getConnectors(self):
         url = '%s/connectors' % self.host
@@ -86,13 +140,18 @@ class App(ListViewDataSource):
         response = requests.put(url)
         self.assertSuccess(response)
 
+    def createConnector(self, content: str):
+        url = '%s/connectors' % self.host
+        response = requests.post(url, json=json.loads(content))
+        self.assertSuccess(response)
+
     def assertSuccess(self, response: requests.Response):
         if response.status_code not in range(200, 300):
-            message = "\nRequest %s '%s' failed (%s):\n%s" % (response.request.method, response.url, response.status_code, response.text)
+            message = "\n\nRequest %s '%s' failed (%s):\n%s\n" % (response.request.method, response.url, response.status_code, response.text)
             raise RequestException(message)
 
-    def prettyfyJson(self, aJson):
-        return json.dumps(aJson, sort_keys=True, indent=4)
+    def prettyfyJson(self, aJson, sortKeys=True):
+        return json.dumps(aJson, sort_keys=sortKeys, indent=4)
 
     def number_of_rows(self) -> int:
         return len(self.__connectors)
@@ -149,6 +208,17 @@ class App(ListViewDataSource):
 
             return (changed, updatedContent)
 
+    def buildConnector(self, name, config):
+        content = dict()
+        content['name'] = name
+        content['config'] = config
+
+        contentJson = json.loads(json.dumps(content))
+        prettyJson = self.prettyfyJson(contentJson, sortKeys=False)
+        changed, updatedContent = self.openEditor(prettyJson)
+
+        if changed:
+            self.createConnector(updatedContent)
 
 if __name__ == '__main__':
     App()
