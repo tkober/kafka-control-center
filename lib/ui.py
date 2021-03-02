@@ -70,6 +70,8 @@ class UI(ListViewDelegate):
         curses.init_pair(colorpairs.SOURCE, curses.COLOR_CYAN, curses.COLOR_BLACK)
         curses.init_pair(colorpairs.SINK, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 
+        curses.init_pair(colorpairs.VIEW, curses.COLOR_BLUE, curses.COLOR_WHITE)
+
     def addLegend(self, screen, legendItems):
         moreLabel = Label('')
 
@@ -106,9 +108,37 @@ class UI(ListViewDelegate):
         screen.add_view(title_hbox, lambda w, h, v: (
         (w - v.required_size().width) // 2, 0, title_hbox.required_size().width + 1, 1))
 
-        columnNamesBox, moreLabel = self.addColumnNames(screen)
+        if self.__mode == Mode.CONNECTORS:
+            subtitleBox, moreLabel = self.addColumnNames(screen)
+            return (background, title_hbox, subtitleBox, moreLabel)
+        else:
+            subtitle_hbox = self.addDocumentName(screen)
+            return (background, title_hbox, subtitle_hbox)
 
-        return (background, title_hbox, columnNamesBox, moreLabel)
+    def addDocumentName(self, screen):
+        moreLabel = Label('')
+
+        def setMoreLabel(clipped):
+            moreLabel.text = '...' if clipped else ''
+
+        box = HBox()
+        box.clipping_callback = setMoreLabel
+
+        connectorNameLabel = Label(self.__connectorName)
+        connectorNameLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        connectorNameLabel.attributes.append(curses.A_BOLD)
+
+        viewLabel = Label('[%s]' % self.__view)
+        viewLabel.attributes.append(curses.color_pair(colorpairs.VIEW))
+        viewLabel.attributes.append(curses.A_BOLD)
+
+        subtitle_hbox = HBox()
+        subtitle_hbox.add_view(connectorNameLabel, Padding(0, 0, 0, 0))
+        subtitle_hbox.add_view(viewLabel, Padding(1, 0, 0, 0))
+        screen.add_view(subtitle_hbox, lambda w, h, v: (
+            (w - v.required_size().width) // 2, 1, subtitle_hbox.required_size().width + 1, 1))
+
+        return subtitle_hbox
 
     def addColumnNames(self, screen):
         moreLabel = Label('')
@@ -212,12 +242,19 @@ class UI(ListViewDelegate):
 
         return result
 
-    def switchToDocument(self, document: Document):
+    def switchToDocument(self, document: Document, connector: str, view: str):
         self.__mode = Mode.DOCUMENT
+        self.__connectorName = connector
+        self.__view = view
+
         self.__screen.remove_view(self.__connectorsListView)
         self.__documentListView = self.createListView(self.__screen, document)
+
         self.__screen.remove_views(self.__legendElements)
         self.__legendElements = self.addLegend(self.__screen, legends.document())
+
+        self.__screen.remove_views(self.__headerElements)
+        self.__headerElements = self.addHeaderBox(self.__screen)
 
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
@@ -249,10 +286,10 @@ class UI(ListViewDelegate):
                     self.app.refreshConnectors()
 
                 if key == keys.O:
-                    _, _, _, _, name = self.app.get_data(self.__connectorsListView.get_selected_row_index())
-                    jsonContent = self.app.getConnectorOverview(name)
+                    _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
+                    jsonContent = self.app.getConnectorOverview(connector)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.switchToDocument(document)
+                    self.switchToDocument(document, connector, 'Overview')
 
                 if key == keys.Q:
                     exit(0)
@@ -272,3 +309,6 @@ class UI(ListViewDelegate):
 
                     self.__screen.remove_views(self.__legendElements)
                     self.__legendElements = self.addLegend(self.__screen, legends.main())
+
+                    self.__screen.remove_views(self.__headerElements)
+                    self.__headerElements = self.addHeaderBox(self.__screen)
