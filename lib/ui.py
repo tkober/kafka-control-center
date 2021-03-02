@@ -7,6 +7,12 @@ import subprocess
 import platform
 
 from lib import colorpairs, legends, keys
+from lib.document import Document
+
+
+class Mode(Enum):
+    CONNECTORS = 1
+    DOCUMENT = 2
 
 
 class UI(ListViewDelegate):
@@ -143,13 +149,36 @@ class UI(ListViewDelegate):
 
         return (box, moreLabel)
 
-    def addListView(self, screen):
-        listView = ListView(self, self.app)
-        screen.add_view(listView, lambda w, h, v: (0, 2, w, h-2))
+    def createListView(self, screen, dataSource):
+        listView = ListView(self, dataSource)
+        return self.addListView(screen, listView)
 
+    def addListView(self, screen, listView):
+        screen.add_view(listView, lambda w, h, v: (0, 2, w, h - 2))
         return listView
 
     def build_row(self, i, data, is_selected, width) -> View:
+        if self.__mode == Mode.CONNECTORS:
+            return self.buildConnectorRow(i, data, is_selected, width)
+        elif self.__mode == Mode.DOCUMENT:
+            return self.buildDocumentRow(i, data, is_selected, width)
+
+    def buildDocumentRow(self, i, data, is_selected, width) -> View:
+        rowHBox = HBox()
+
+        lineLabel = Label(data)
+        rowHBox.add_view(lineLabel, Padding(1, 0, 0, 0))
+
+        result = rowHBox
+        if is_selected:
+            result = BackgroundView(curses.color_pair(colorpairs.SELECTED))
+            result.add_view(rowHBox)
+            for label in rowHBox.get_elements():
+                label.attributes.append(curses.color_pair(colorpairs.SELECTED))
+
+        return result
+
+    def buildConnectorRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
 
         state, type, workerId, tasks, name = data
@@ -185,29 +214,59 @@ class UI(ListViewDelegate):
 
 
     def loop(self, stdscr):
+        self.__mode = Mode.CONNECTORS
         self.setupColors()
 
         screen = ConstrainedBasedScreen(stdscr)
         self.titleElements = []
         legendElements = self.addLegend(screen, legends.main())
         headerElements = self.addHeaderBox(screen)
-        listView = self.addListView(screen)
+        connectorsListView = self.createListView(screen, self.app)
+        documentListView = None
 
         while 1:
             screen.render()
 
             key = stdscr.getch()
-            if key == curses.KEY_RESIZE:
-                continue
 
-            if key == keys.UP:
-                listView.select_previous()
+            if self.__mode == Mode.CONNECTORS:
+                if key == curses.KEY_RESIZE:
+                    continue
 
-            if key == keys.DOWN:
-                listView.select_next()
+                if key == keys.UP:
+                    connectorsListView.select_previous()
 
-            if key == keys.R:
-                self.app.refreshConnectors()
+                if key == keys.DOWN:
+                    connectorsListView.select_next()
 
-            if key == keys.Q:
-                exit(0)
+                if key == keys.R:
+                    self.app.refreshConnectors()
+
+                if key == keys.O:
+                    _, _, _, _, name = self.app.get_data(connectorsListView.get_selected_row_index())
+                    jsonContent = self.app.getConnectorOverview(name)
+                    document = Document(self.app.prettyfyJson(jsonContent))
+                    self.__mode = Mode.DOCUMENT
+                    screen.remove_view(connectorsListView)
+                    documentListView = self.createListView(screen, document)
+                    screen.remove_views(legendElements)
+                    legendElements = self.addLegend(screen, legends.document())
+
+                if key == keys.Q:
+                    exit(0)
+
+            else:
+                if key == keys.UP:
+                    documentListView.select_previous()
+
+                if key == keys.DOWN:
+                    documentListView.select_next()
+
+                if key == keys.Q:
+                    self.__mode = Mode.CONNECTORS
+
+                    screen.remove_view(documentListView)
+                    self.addListView(screen, connectorsListView)
+
+                    screen.remove_views(legendElements)
+                    legendElements = self.addLegend(screen, legends.main())

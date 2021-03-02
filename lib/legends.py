@@ -13,8 +13,9 @@ def main():
     result.append(('[Q]', ' Quit '))
     return result
 
-def fileView():
+def document():
     return [
-        ('[UP|DOWN]', ' Scroll '),
-        ('[ESC]', ' Quit ')
+        ('[UP]', ' Scroll up '),
+        ('[DOWN]', ' Scroll down '),
+        ('[Q]', ' Quit ')
     ]

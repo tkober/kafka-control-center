@@ -1,7 +1,6 @@
 import curses
 import requests
 import json
-from tqdm import tqdm
 
 from gupy.view import ListViewDataSource
 from lib.ui import UI
@@ -77,14 +76,5 @@ class App(ListViewDataSource):
 
 if __name__ == '__main__':
     host = 'http://172.20.3.207:31096'
-
-#    print('loading connectors...')
-#    connectorIds = getConnectors(host)
-
-#    connectors = dict()
-#    for i in tqdm(range(len(connectorIds))):
-#        connectorId = connectorIds[i]
-#        connector = getConnectorStatus(host, connectorId)
-#        connectors[connectorId] = connector
 
     App(host)
