@@ -16,6 +16,11 @@ class Mode(Enum):
     DOCUMENT = 2
 
 
+class Clipping(Enum):
+    BEGIN = 1
+    END = 2
+
+
 class UI(ListViewDelegate):
 
     STATE_FORMAT = '{:<11}'
@@ -210,6 +215,10 @@ class UI(ListViewDelegate):
         lineLabel = Label(data)
         rowHBox.add_view(lineLabel, Padding(0, 0, 0, 0))
 
+        if rowHBox.required_size().width >= width:
+            length = (rowHBox.required_size().width - width) + 1
+            self.clipLabel(lineLabel, length)
+
         result = rowHBox
         if is_selected:
             result = BackgroundView(curses.color_pair(colorpairs.SELECTED))
@@ -218,6 +227,15 @@ class UI(ListViewDelegate):
                 label.attributes.append(curses.color_pair(colorpairs.SELECTED))
 
         return result
+
+    def clipLabel(self, label, length, indicator='...', clipping=Clipping.END):
+        length = length + len(indicator)
+        if clipping == Clipping.END:
+            clippedValue = label.text[:-length] + indicator
+        else:
+            clippedValue = indicator + label.text[length:]
+
+        label.text = clippedValue
 
     def buildConnectorRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
