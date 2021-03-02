@@ -212,20 +212,26 @@ class UI(ListViewDelegate):
 
         return result
 
+    def switchToDocument(self, document: Document):
+        self.__mode = Mode.DOCUMENT
+        self.__screen.remove_view(self.__connectorsListView)
+        self.__documentListView = self.createListView(self.__screen, document)
+        self.__screen.remove_views(self.__legendElements)
+        self.__legendElements = self.addLegend(self.__screen, legends.document())
 
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
         self.setupColors()
 
-        screen = ConstrainedBasedScreen(stdscr)
+        self.__screen = ConstrainedBasedScreen(stdscr)
         self.titleElements = []
-        legendElements = self.addLegend(screen, legends.main())
-        headerElements = self.addHeaderBox(screen)
-        connectorsListView = self.createListView(screen, self.app)
-        documentListView = None
+        self.__legendElements = self.addLegend(self.__screen, legends.main())
+        self.__headerElements = self.addHeaderBox(self.__screen)
+        self.__connectorsListView = self.createListView(self.__screen, self.app)
+        self.__documentListView = None
 
         while 1:
-            screen.render()
+            self.__screen.render()
 
             key = stdscr.getch()
 
@@ -234,39 +240,35 @@ class UI(ListViewDelegate):
                     continue
 
                 if key == keys.UP:
-                    connectorsListView.select_previous()
+                    self.__connectorsListView.select_previous()
 
                 if key == keys.DOWN:
-                    connectorsListView.select_next()
+                    self.__connectorsListView.select_next()
 
                 if key == keys.R:
                     self.app.refreshConnectors()
 
                 if key == keys.O:
-                    _, _, _, _, name = self.app.get_data(connectorsListView.get_selected_row_index())
+                    _, _, _, _, name = self.app.get_data(self.__connectorsListView.get_selected_row_index())
                     jsonContent = self.app.getConnectorOverview(name)
                     document = Document(self.app.prettyfyJson(jsonContent))
-                    self.__mode = Mode.DOCUMENT
-                    screen.remove_view(connectorsListView)
-                    documentListView = self.createListView(screen, document)
-                    screen.remove_views(legendElements)
-                    legendElements = self.addLegend(screen, legends.document())
+                    self.switchToDocument(document)
 
                 if key == keys.Q:
                     exit(0)
 
             else:
                 if key == keys.UP:
-                    documentListView.select_previous()
+                    self.__documentListView.select_previous()
 
                 if key == keys.DOWN:
-                    documentListView.select_next()
+                    self.__documentListView.select_next()
 
                 if key == keys.Q:
                     self.__mode = Mode.CONNECTORS
 
-                    screen.remove_view(documentListView)
-                    self.addListView(screen, connectorsListView)
+                    self.__screen.remove_view(self.__documentListView)
+                    self.addListView(self.__screen, self.__connectorsListView)
 
-                    screen.remove_views(legendElements)
-                    legendElements = self.addLegend(screen, legends.main())
+                    self.__screen.remove_views(self.__legendElements)
+                    self.__legendElements = self.addLegend(self.__screen, legends.main())
