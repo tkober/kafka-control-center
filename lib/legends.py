@@ -5,7 +5,7 @@ def main():
         ('[R]', ' Refresh '),
         ('[O]', ' Overview '),
         ('[S]', ' Status '),
-        ('[ENTER]', ' Config '),
+        ('[C]', ' Config '),
         ('[U]', ' Update Config '),
         ('[T]', ' Tasks '),
     ]
