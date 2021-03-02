@@ -17,5 +17,6 @@ def document():
     return [
         ('[UP]', ' Scroll up '),
         ('[DOWN]', ' Scroll down '),
+        ('[O]', ' Open in Editor '),
         ('[Q]', ' Quit ')
     ]

@@ -3,8 +3,6 @@ from gupy.view import BackgroundView, Label, HBox, ListView, ListViewDelegate, V
 from gupy.screen import ConstrainedBasedScreen
 from enum import Enum
 import curses
-import subprocess
-import platform
 
 from lib import colorpairs, legends, keys
 from lib.document import Document
@@ -328,6 +326,10 @@ class UI(ListViewDelegate):
 
                 if key == keys.DOWN:
                     self.__documentListView.select_next()
+
+                if key == keys.O:
+                    self.app.openEditor(self.__document.getText())
+                    exit(0)
 
                 if key == keys.Q:
                     self.__mode = Mode.CONNECTORS

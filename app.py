@@ -1,4 +1,8 @@
 import curses
+import os
+import tempfile
+from subprocess import call
+
 import requests
 import json
 
@@ -70,6 +74,20 @@ class App(ListViewDataSource):
 
         connectorIds = self.getConnectors()
         self.__connectors = [ self.getConnector(connectorId) for connectorId in connectorIds ]
+
+    def openEditor(self, content):
+        EDITOR = os.environ.get('EDITOR', 'vim')
+        with tempfile.NamedTemporaryFile(suffix='.tmp', mode='w+') as tf:
+            tf.write(content)
+            tf.flush()
+            call([EDITOR, '+set backupcopy=yes', tf.name])
+
+            tf.seek(0)
+            updatedContent = tf.read()
+            updatedContent = updatedContent.strip()
+            changed = updatedContent != content
+
+            return (changed, updatedContent)
 
 
 

@@ -13,4 +13,7 @@ class Document(ListViewDataSource):
     def get_data(self, i) -> object:
         return self.__lines[i]
 
+    def getText(self) -> str:
+        return self.__text
+
 
