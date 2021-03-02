@@ -186,7 +186,7 @@ class UI(ListViewDelegate):
         return self.addListView(screen, listView)
 
     def addListView(self, screen, listView):
-        screen.add_view(listView, lambda w, h, v: (0, 2, w, h - 2))
+        screen.add_view(listView, lambda w, h, v: (0, 2, w, h - 3))
         return listView
 
     def build_row(self, i, data, is_selected, width) -> View:
