@@ -303,6 +303,56 @@ class UI(ListViewDelegate):
     def isMacOs(self):
         return platform.system() == 'Darwin'
 
+    def reloadConnectors(self):
+        self.app.refreshConnectors(onBegin=self.onReloadBegin,
+                                   onFetchComplete=self.onFetchComplete,
+                                   onLoadingBegin=self.onConnectorLoadingBegin,
+                                   onClomplete=self.onReloadComplete)
+        self.render()
+
+    def onReloadBegin(self):
+        self.hideConnectorsList()
+        self.showApiInteractionStatusLabel('Fetching connectors...')
+        self.render()
+
+    def onFetchComplete(self, connectorIds):
+        self.__maxConnectorIdLength = len(max(connectorIds, key=len))
+
+    def onConnectorLoadingBegin(self, i, n, connectorId):
+        connectorFormat = '{:<%d}' % self.__maxConnectorIdLength
+        connector = connectorFormat.format("'"+connectorId+"'")
+        status = '(%s|%s) Loading Connector %s' % (i, n, connector)
+        self.updateApiInteractionStatusLabel(status)
+        self.render()
+
+    def onReloadComplete(self):
+        self.removeApiInteractionStatusLabel()
+        self.showConnectorsList()
+        self.render()
+
+    def hideConnectorsList(self):
+        self.__screen.remove_view(self.__connectorsListView)
+
+    def showConnectorsList(self):
+        self.addListView(self.__screen, self.__connectorsListView)
+
+    def showApiInteractionStatusLabel(self, status):
+        self.__statusLabel = Label(status)
+
+        self.__apiStatusHbox = HBox()
+        self.__apiStatusHbox.add_view(self.__statusLabel, Padding(0, 0, 0, 0))
+        self.__screen.add_view(self.__apiStatusHbox, lambda w, h, v: (
+            (w - v.required_size().width) // 2, h // 2, self.__apiStatusHbox.required_size().width + 1, 1))
+
+    def removeApiInteractionStatusLabel(self):
+        self.__screen.remove_view(self.__apiStatusHbox)
+
+    def updateApiInteractionStatusLabel(self, status):
+        self.__statusLabel.text = status
+
+    def render(self):
+        self.__screen.render()
+
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
         self.__lineNumbers = True
@@ -316,6 +366,8 @@ class UI(ListViewDelegate):
         self.__connectorsListView = self.createListView(self.__screen, self.app)
         self.__documentListView = None
 
+        self.reloadConnectors()
+
         while 1:
             _, screen_width = self.__screen.get_screen_size()
             if self.__document:
@@ -324,7 +376,7 @@ class UI(ListViewDelegate):
                     availableSize = availableSize - len(str(self.__document.number_of_rows())) - 3
                 self.__document.wrapToWidth(availableSize)
 
-            self.__screen.render()
+            self.render()
 
             key = stdscr.getch()
 
@@ -339,7 +391,7 @@ class UI(ListViewDelegate):
                     self.__connectorsListView.select_next()
 
                 if key == keys.R:
-                    self.app.refreshConnectors()
+                    self.reloadConnectors()
 
                 if key == keys.O:
                     _, _, _, _, connector = self.app.get_data(self.__connectorsListView.get_selected_row_index())

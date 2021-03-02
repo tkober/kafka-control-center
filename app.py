@@ -69,11 +69,27 @@ class App(ListViewDataSource):
 
         return (state, type, workerId, tasks, name)
 
-    def refreshConnectors(self):
+    def refreshConnectors(self, onBegin=None, onFetchComplete=None, onLoadingBegin=None, onClomplete=None):
         self.__connectors = []
+        if onBegin:
+            onBegin()
 
         connectorIds = self.getConnectors()
-        self.__connectors = [ self.getConnector(connectorId) for connectorId in connectorIds ]
+        if onFetchComplete:
+            onFetchComplete(connectorIds)
+
+        self.__connectors = []
+        i = 1
+        for connectorId in connectorIds:
+            if onLoadingBegin:
+                onLoadingBegin(i, len(connectorIds), connectorId)
+
+            self.__connectors.append(self.getConnector(connectorId))
+            i += 1
+
+        if onClomplete:
+            onClomplete()
+
 
     def openEditor(self, content):
         EDITOR = os.environ.get('EDITOR', 'vim')
