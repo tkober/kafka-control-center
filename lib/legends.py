@@ -1,3 +1,5 @@
+import platform
+
 def main():
     result = [
         ('[UP]', ' Scroll up '),
@@ -14,10 +16,15 @@ def main():
     return result
 
 def document():
-    return [
+    result = [
         ('[UP]', ' Scroll up '),
         ('[DOWN]', ' Scroll down '),
         ('[L]', ' Toggle Line Numbers '),
-        ('[O]', ' Open in Editor '),
-        ('[Q]', ' Quit ')
+        ('[O]', ' Open in System Editor ')
     ]
+
+    if platform.system() == 'Darwin':
+        result.append(('[C]', ' Copy Key '))
+
+    result.append(('[Q]', ' Quit '))
+    return result

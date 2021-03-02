@@ -1,3 +1,6 @@
+import subprocess
+import platform
+
 from gupy.geometry import Padding
 from gupy.view import BackgroundView, Label, HBox, ListView, ListViewDelegate, View
 from gupy.screen import ConstrainedBasedScreen
@@ -265,6 +268,21 @@ class UI(ListViewDelegate):
         self.__screen.remove_views(self.__headerElements)
         self.__headerElements = self.addHeaderBox(self.__screen)
 
+    def switchToConnectors(self):
+        self.__mode = Mode.CONNECTORS
+
+        self.__screen.remove_view(self.__documentListView)
+        self.addListView(self.__screen, self.__connectorsListView)
+
+        self.__screen.remove_views(self.__legendElements)
+        self.__legendElements = self.addLegend(self.__screen, legends.main())
+
+        self.__screen.remove_views(self.__headerElements)
+        self.__headerElements = self.addHeaderBox(self.__screen)
+
+    def isMacOs(self):
+        return platform.system() == 'Darwin'
+
     def loop(self, stdscr):
         self.__mode = Mode.CONNECTORS
         self.__lineNumbers = True
@@ -336,14 +354,11 @@ class UI(ListViewDelegate):
                 if key == keys.L:
                     self.__lineNumbers = not self.__lineNumbers
 
+                if key == keys.C and self.isMacOs():
+                    if self.app.number_of_rows() > 0:
+                        text = self.__document.getText()
+                        subprocess.run("pbcopy", universal_newlines=True, input=text)
+                        self.switchToConnectors()
+
                 if key == keys.Q:
-                    self.__mode = Mode.CONNECTORS
-
-                    self.__screen.remove_view(self.__documentListView)
-                    self.addListView(self.__screen, self.__connectorsListView)
-
-                    self.__screen.remove_views(self.__legendElements)
-                    self.__legendElements = self.addLegend(self.__screen, legends.main())
-
-                    self.__screen.remove_views(self.__headerElements)
-                    self.__headerElements = self.addHeaderBox(self.__screen)
+                    self.switchToConnectors()
