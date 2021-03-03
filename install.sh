@@ -25,6 +25,6 @@ if [ -x "$(command -v conda)" ]; then
 	fi
 fi
 
-echo "function $FUNCTION_NAME { $BASEDIR/$RUN_SCRIPT \$1; }" >> ~/.bash_profile
+echo "function $FUNCTION_NAME { $BASEDIR/$RUN_SCRIPT \$@; }" >> ~/.bash_profile
 
 clear
