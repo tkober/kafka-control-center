@@ -11,7 +11,10 @@ In order do install or run this tool make sure either PIP or Anaconda is install
 
 This repo contains git submodules. Remember to initialize these by running
 
-`git submodule init`
+```
+git submodule init
+git submodule update --remote
+```
 
 
 ## Install
