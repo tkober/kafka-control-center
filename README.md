@@ -51,3 +51,7 @@ optional arguments:
   --plugins             Return a list of connector plugins installed in the Kafka Connect cluster
 ```
 
+## TODOS
+
+- Add action to restart individual tasks 
+
