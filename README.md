@@ -1,6 +1,7 @@
 # confluent-connect
 
-This tool implements an interactive command line tool for working with the Confluent Connect [REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html). 
+This tool implements an interactive command line tool for working with the Confluent Connect [REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html).
+![image](doc/screenshot.png)
 
 ## Prerequireties
 
