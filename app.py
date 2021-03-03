@@ -17,8 +17,8 @@ class App(ListViewDataSource):
 
     def parseArgs(self):
         argparser = argparse.ArgumentParser(
-            prog='confluent-cli',
-            description='Implements an interactive CLI for the usage of the confluent REST interface'
+            prog='confluent-connect',
+            description='Implements an interactive tool for the usage of the Confluent Connect REST interface.'
         )
 
         argparser.add_argument(

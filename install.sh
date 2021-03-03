@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-ENV_NAME="confluent-cli"
+ENV_NAME="confluent-connect"
 YML_FILE="environment.yml"
 PIP_FILE="environment.txt"
 
 RUN_SCRIPT="run.sh"
-FUNCTION_NAME="confluent-cli"
-JHA_HOME_NAME="JHA_HOME"
+FUNCTION_NAME="confluent-connect"
 
 BASEDIR=$(cd "$(dirname "$0")/"; pwd)
 

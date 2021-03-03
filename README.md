@@ -1,6 +1,6 @@
-# confluenc-cli
+# confluent-connect
 
-This tool implements an interactive command line interface for working with the confluence [REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html). 
+This tool implements an interactive command line tool for working with the Confluent Connect [REST interface](https://docs.confluent.io/platform/current/connect/references/restapi.html). 
 
 ## Prerequireties
 
@@ -28,16 +28,16 @@ Some packages will be installed during the installation. If anaconda is availabl
 After installation _sg-translations_ is available in your bash using the following command:
 
 ```
-confluent-cli [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
+confluent-connect [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
 ```
 
 If no path is provided the current directory will be used.
 
 ### --help
 ```
-usage: confluent-cli [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
+usage: confluent-connect [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
 
-Implements an interactive CLI for the usage of the confluent REST interface
+Implements an interactive tool for the usage of the Confluent Connect REST interface.
 
 positional arguments:
   URL                   The URL of the cluster in the format https://HOST:PORT
