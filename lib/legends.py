@@ -27,7 +27,7 @@ def document():
     ]
 
     if platform.system() == 'Darwin':
-        result.append(('[C]', ' Copy Key '))
+        result.append(('[C]', ' Copy to clipboard '))
 
     result.append(('[Q]', ' Quit '))
     return result
