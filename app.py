@@ -212,6 +212,7 @@ class App(ListViewDataSource):
             onBegin()
 
         connectorIds = self.getConnectors()
+        connectorIds.sort()
         if onFetchComplete:
             onFetchComplete(connectorIds)
 
