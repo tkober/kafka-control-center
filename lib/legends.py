@@ -2,8 +2,7 @@ import platform
 
 def main():
     result = [
-        ('[UP]', ' Scroll up '),
-        ('[DOWN]', ' Scroll down '),
+        ('[UP|DOWN]', ' Scrolling '),
         ('[L]', ' Reload List '),
         ('[O]', ' Overview '),
         ('[S]', ' Status '),
