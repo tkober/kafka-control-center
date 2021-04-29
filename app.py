@@ -204,7 +204,13 @@ class App(ListViewDataSource):
         name = connector['name']
         tasks = len(connector['tasks'])
 
-        return (state, type, workerId, tasks, name)
+        config = self.getConnectorConfig(name)
+        if type == 'source':
+            topic = config['topic.prefix']
+        else:
+            topic = config['topics']
+
+        return (state, type, workerId, tasks, topic, name)
 
     def refreshConnectors(self, onBegin=None, onFetchComplete=None, onLoadingBegin=None, onClomplete=None):
         self.__connectors = []

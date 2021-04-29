@@ -28,6 +28,9 @@ class UI(ListViewDelegate):
     TYPE_FORMAT = '{:<7}'
     TASKS_FORMAT = '{:<6}'
 
+    MAX_TOPIC_LENGTH = 30
+    TOPIC_FORMAT = '{:<' + str(MAX_TOPIC_LENGTH) + '}'
+
     STATE_COLORS = {
         'UNASSIGNED': colorpairs.UNASSIGNED,
         'RUNNING': colorpairs.RUNNING,
@@ -157,6 +160,11 @@ class UI(ListViewDelegate):
         typeLabel.attributes.append(curses.A_BOLD)
         box.add_view(typeLabel, Padding(2, 0, 0, 0))
 
+        topicLabel = Label(self.TOPIC_FORMAT.format('TOPIC'))
+        topicLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
+        topicLabel.attributes.append(curses.A_BOLD)
+        box.add_view(topicLabel, Padding(2, 0, 0, 0))
+
         tasksLabel = Label(self.TASKS_FORMAT.format('TASKS'))
         tasksLabel.attributes.append(curses.color_pair(colorpairs.DESCRIPTION))
         tasksLabel.attributes.append(curses.A_BOLD)
@@ -227,7 +235,7 @@ class UI(ListViewDelegate):
     def buildConnectorRow(self, i, data, is_selected, width) -> View:
         rowHBox = HBox()
 
-        state, type, workerId, tasks, name = data
+        state, type, workerId, tasks, topic, name = data
 
         stateLabel = Label(self.STATE_FORMAT.format(state))
         stateLabel.attributes.append(curses.color_pair(self.STATE_COLORS[state]))
@@ -241,11 +249,16 @@ class UI(ListViewDelegate):
 
         tasksLabel = Label(self.TASKS_FORMAT.format(tasks))
 
+        if topic and len(topic) > self.MAX_TOPIC_LENGTH:
+            topic = topic[0:self.MAX_TOPIC_LENGTH-3] + '...'
+        topicLabel = Label(self.TOPIC_FORMAT.format(topic if topic else ''))
+
         nameLabel = Label(name)
 
         rowHBox.add_view(stateLabel, Padding(1, 0, 0, 0))
         rowHBox.add_view(workerIdLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(typeLabel, Padding(2, 0, 0, 0))
+        rowHBox.add_view(topicLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(tasksLabel, Padding(2, 0, 0, 0))
         rowHBox.add_view(nameLabel, Padding(2, 0, 0, 0))
 
@@ -352,7 +365,7 @@ class UI(ListViewDelegate):
         self.__documentListView = None
 
         self.reloadConnectors()
-        _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
+        _, _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
         while 1:
             _, screen_width = self.__screen.get_screen_size()
@@ -372,11 +385,11 @@ class UI(ListViewDelegate):
 
                 if key == keys.UP:
                     self.__connectorsListView.select_previous()
-                    _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
+                    _, _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
                 if key == keys.DOWN:
                     self.__connectorsListView.select_next()
-                    _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
+                    _, _, _, _, _, selectedConnector = self.app.get_data(self.__connectorsListView.get_selected_row_index())
 
                 if key == keys.L:
                     self.reloadConnectors()
