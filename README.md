@@ -32,14 +32,14 @@ Some packages will be installed during the installation. If anaconda is availabl
 After installation _sg-translations_ is available in your bash using the following command:
 
 ```
-confluent-connect [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
+confluent-connect [-h] [-c NAME] [-b PATH] [--jdbcSource] [--jdbcSink] [--info] [--plugins] URL
 ```
 
 If no path is provided the current directory will be used.
 
 ### --help
 ```
-usage: confluent-connect [-h] [-c NAME] [--jdbcSource] [--jdbcSink] [--plugins] URL
+usage: confluent-connect [-h] [-c NAME] [-b PATH] [--jdbcSource] [--jdbcSink] [--info] [--plugins] URL
 
 Implements an interactive tool for the usage of the Confluent Connect REST interface.
 
@@ -50,12 +50,10 @@ optional arguments:
   -h, --help            show this help message and exit
   -c NAME, --create NAME
                         Create a new connector with the given NAME
+  -b PATH, --backup PATH
+                        Saves the configs of all connectors to a fiven destination. The file name will be the connectors name.
   --jdbcSource          Uses the template for a JDBC Source Connector
   --jdbcSink            Uses the template for a JDBC Sink Connector
+  --info                Returns the Connect Cluster information
   --plugins             Return a list of connector plugins installed in the Kafka Connect cluster
 ```
-
-## TODOS
-
-- Add action to restart individual tasks 
-
