@@ -3,6 +3,7 @@ import curses
 import os
 import tempfile
 from subprocess import call
+from os import path
 
 import requests
 import json
@@ -30,6 +31,13 @@ class App(ListViewDataSource):
             '--create',
             help="Create a new connector with the given NAME",
             metavar='NAME'
+        )
+
+        argparser.add_argument(
+            '-b',
+            '--backup',
+            help="Saves the configs of all connectors to a fiven destination. The file name will be the connectors name.",
+            metavar='PATH'
         )
 
         argparser.add_argument(
@@ -96,6 +104,9 @@ class App(ListViewDataSource):
         if args.create:
             config = self.configFromArgs(args)
             self.buildConnector(args.create, config)
+
+        elif args.backup:
+            self.backupConnectors(args.backup)
 
         elif args.info:
             self.printInfo()
@@ -278,6 +289,27 @@ class App(ListViewDataSource):
     def printInfo(self):
         infos = self.getConnectInfos()
         print(self.prettyfyJson(infos))
+
+    def backupConnectors(self, directory):
+        if not path.exists(directory):
+            print("No such file ore directory: '%s'" % directory)
+
+        if not path.isdir(directory):
+            print("'%s' is not a directory" % directory)
+
+        connectorIds = self.getConnectors()
+        connectorIds.sort()
+        maxConnectorLength = len(max(connectorIds, key=len))
+
+        for connectorId in connectorIds:
+            config = self.getConnectorConfig(connectorId)
+
+            configPath = path.join(directory, '%s.json' % connectorId)
+            configFile = open(configPath, 'w')
+            configFile.write(self.prettyfyJson(config))
+            configFile.close()
+
+            print('%s  =>  %s' % (connectorId.ljust(maxConnectorLength), configPath))
 
 
 if __name__ == '__main__':
