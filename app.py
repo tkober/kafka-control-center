@@ -246,7 +246,7 @@ class App(ListViewDataSource):
             onClomplete()
 
     def refreshConnector(self, index):
-        _, _, _, _, connector = self.__connectors[index]
+        _, _, _, _, _, connector = self.__connectors[index]
         self.__connectors[index] = self.getConnector(connector)
 
     def openEditor(self, content):
