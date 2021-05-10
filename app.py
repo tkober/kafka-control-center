@@ -275,12 +275,20 @@ class App(ListViewDataSource):
         if changed:
             self.createConnector(updatedContent)
 
-    def updateConnector(self, connector, config):
+    def updateConnector(self, connector):
+        config = self.getConnectorConfig(connector)
+        config = self.prettyfyJson(config)
         changed, updatedContent = self.openEditor(config)
 
         if changed:
             self.updateConfig(connector, updatedContent)
 
+    def duplicateConnector(self, connector):
+        config = self.getConnectorConfig(connector)
+        name = config['name']
+        config.pop('name', None)
+
+        self.buildConnector(name, config)
 
     def printPlugins(self):
         plugins = self.getConnectorPlugins()
