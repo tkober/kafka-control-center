@@ -314,7 +314,10 @@ class UI(ListViewDelegate):
         self.render()
 
     def onFetchComplete(self, connectorIds):
-        self.__maxConnectorIdLength = len(max(connectorIds, key=len))
+        if len(connectorIds) == 0:
+            self.__maxConnectorIdLength = 0
+        else:
+            self.__maxConnectorIdLength = len(max(connectorIds, key=len))
 
     def onConnectorLoadingBegin(self, i, n, connectorId):
         connectorFormat = '{:<%d}' % self.__maxConnectorIdLength
