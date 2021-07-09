@@ -28,7 +28,7 @@ class UI(ListViewDelegate):
     TYPE_FORMAT = '{:<7}'
     TASKS_FORMAT = '{:<6}'
 
-    MAX_TOPIC_LENGTH = 30
+    MAX_TOPIC_LENGTH = 60
     TOPIC_FORMAT = '{:<' + str(MAX_TOPIC_LENGTH) + '}'
 
     STATE_COLORS = {
