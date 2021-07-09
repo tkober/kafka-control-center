@@ -36,7 +36,7 @@ class App(ListViewDataSource):
         argparser.add_argument(
             '-b',
             '--backup',
-            help="Saves the configs of all connectors to a fiven destination. The file name will be the connectors name.",
+            help="Saves the configs of all connectors to a fiven destination. The file name will be the connectors name. In addition to that a file 'ACTIVE_CONNECTORS.json' will be created containing a list of all config files as a JSON array.",
             metavar='PATH'
         )
 
@@ -308,17 +308,28 @@ class App(ListViewDataSource):
         connectorIds = self.getConnectors()
         connectorIds.sort()
         maxConnectorLength = len(max(connectorIds, key=len))
+        configFiles = []
 
         for connectorId in connectorIds:
             config = self.getConnectorConfig(connectorId)
 
-            configPath = path.join(directory, '%s.json' % connectorId)
+            configFileName = f'{connectorId}.json'
+            configPath = path.join(directory, configFileName)
             configFile = open(configPath, 'w')
             configFile.write(self.prettyfyJson(config))
             configFile.close()
 
+            configFiles.append(configFileName)
+
             print('%s  =>  %s' % (connectorId.ljust(maxConnectorLength), configPath))
 
+        activeConnectorsFileName = 'ACTIVE_CONNECTORS.json'
+        activeConnectorsPath = path.join(directory, activeConnectorsFileName)
+        file = open(activeConnectorsPath, 'w')
+        file.write(self.prettyfyJson(configFiles))
+        file.close()
+
+        print(f'\nA list of active connectors can be found here => {activeConnectorsPath}')
 
 if __name__ == '__main__':
     App()
