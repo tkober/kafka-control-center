@@ -41,6 +41,19 @@ class App(ListViewDataSource):
         )
 
         argparser.add_argument(
+            '-r',
+            '--restore',
+            help='Restores connectors from a list of configuration files. Per default a file containing a JSON array of the config files is expected. Use --directory to restore all config files from a given directory.',
+            metavar='LIST_OR_DIRECTORY'
+        )
+
+        argparser.add_argument(
+            '--directory',
+            help="Restores all config files in a directory instead of a list.",
+            action="store_true"
+        )
+
+        argparser.add_argument(
             '--jdbcSource',
             help="Uses the template for a JDBC Source Connector",
             action="store_true"
@@ -104,6 +117,9 @@ class App(ListViewDataSource):
         if args.create:
             config = self.configFromArgs(args)
             self.buildConnector(args.create, config)
+
+        elif args.restore:
+            self.restoreConnectors(args.restore, args.directory)
 
         elif args.backup:
             self.backupConnectors(args.backup)
@@ -274,6 +290,69 @@ class App(ListViewDataSource):
 
         if changed:
             self.createConnector(updatedContent)
+
+    def loadConfigFiles(self, files):
+        configs = {}
+        for file in files:
+            with open(file) as jsonFile:
+                config = json.load(jsonFile)
+                jsonFile.close()
+
+                print(f'Read config from {file}')
+                configs[file] = config
+
+        return configs
+
+    def loadConfigFilesFromDirectory(self, directory):
+        if not path.exists(directory):
+            print("No such file ore directory: '%s'" % directory)
+
+        if not path.isdir(directory):
+            print("'%s' is not a directory" % directory)
+
+        files = [path.join(directory, f) for f in os.listdir(directory) if path.isfile(path.join(directory, f))]
+        result = self.loadConfigFiles(files)
+
+        return result
+
+    def loadConfigFilesFromList(self, listFile):
+        if not path.exists(listFile):
+            print("No such file ore directory: '%s'" % listFile)
+
+        if not path.isfile(listFile):
+            print("'%s' is a directory" % listFile)
+
+        with open(listFile) as jsonFile:
+            files = json.load(jsonFile)
+            jsonFile.close()
+
+        files = [f for f in files if path.isfile(f)]
+        result = self.loadConfigFiles(files)
+
+        return result
+
+    def transformConfigIfNecessary(self, config):
+        result = config
+        if 'config' not in config:
+            result = dict()
+            result['name'] = config['name']
+            result['config'] = config
+
+        return result
+
+    def restoreConnectors(self, listOrDirectory, isDirectory):
+        if (isDirectory):
+            configs = self.loadConfigFilesFromDirectory(listOrDirectory)
+        else:
+            configs = self.loadConfigFilesFromList(listOrDirectory)
+
+        print('\nRestoring Connectors...')
+        for filename, config in configs.items():
+            transformedConfig = self.transformConfigIfNecessary(config)
+            self.createConnector(self.prettyfyJson(transformedConfig))
+
+            print(f'Restored connector {filename}')
+
 
     def updateConnector(self, connector):
         config = self.getConnectorConfig(connector)
