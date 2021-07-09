@@ -295,10 +295,10 @@ class App(ListViewDataSource):
         configs = {}
         for file in files:
             with open(file) as jsonFile:
+                print(f'Reading config from {file}')
                 config = json.load(jsonFile)
                 jsonFile.close()
 
-                print(f'Read config from {file}')
                 configs[file] = config
 
         return configs
